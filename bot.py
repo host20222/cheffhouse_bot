@@ -5,7 +5,7 @@ from telebot import TeleBot, types
 
 BOT_TOKEN = "8659993864:AAEBH4hJXwDhP67SfT5XMYyWTdZn15MKLlA"
 ADMIN_ID = 8237810301
-MAIN_PHOTO = "https://i.ibb.co/M5nrYHCs/photo.jpg"
+MAIN_PHOTO = "https://i.ibb.co/Hp76WyHV/IMG-5547.jpg"
 
 bot = TeleBot(BOT_TOKEN)
 
