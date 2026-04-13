@@ -1,6 +1,7 @@
 import logging
 import sqlite3
 import json
+import time
 from datetime import datetime
 from telebot import TeleBot, types
 
@@ -158,7 +159,8 @@ TEXTS = {
         'cart_total': '\n💰 Итого: {total}',
         'cart_cleared': '🗑 Корзина очищена',
         'ask_address': '📍 Введите адрес доставки (улица, номер дома) или отправьте геопозицию:',
-        'order_placed': '✅ Заказ #{order_id} оформлен!\n\nКурьер скоро возьмёт ваш заказ.\nВы получите уведомление.\n\n🎉 Вы добавлены в наш канал:\n👉 @chef_house_cz',
+        'order_placed': '✅ Заказ #{order_id} оформлен!\n🚴 Курьер скоро свяжется с вами лично.',
+        'order_placed_2': '🌿 Вы стали частью Chef House!\n\nЗакрытое сообщество для клиентов:\n- Эксклюзивные акции\n- Ранний доступ к новинкам\n- Актуальные новости и обновления\n- Прямая связь с командой\n👥 Вступить в группу: t.me/chef_house_cz\n\n📣 Наш канал с новостями и акциями:\n👉 t.me/chef_house_cz',
         'courier_took': '🚴 Курьер взял ваш заказ #{order_id}!\n\nОжидайте доставку.',
         'profile': '📁 Профиль\n\n🔗 ID: {user_id}\n💰 Баланс: {balance:.2f} €\n📦 Заказов: {orders}\n🗓 Дата: {reg_date}',
         'use_buttons': 'Используйте кнопки меню 👇',
@@ -186,7 +188,8 @@ TEXTS = {
         'cart_total': '\n💰 Total: {total}',
         'cart_cleared': '🗑 Cart cleared',
         'ask_address': '📍 Enter delivery address (street, house number) or send your geolocation:',
-        'order_placed': '✅ Order #{order_id} placed!\n\nA courier will take your order soon.\nYou will be notified.\n\n🎉 You have been added to our channel:\n👉 @chef_house_cz',
+        'order_placed': '✅ Order #{order_id} placed!\n🚴 A courier will contact you personally soon.',
+        'order_placed_2': '🌿 You have joined Chef House!\n\nExclusive community for customers:\n- Exclusive deals\n- Early access to new products\n- Latest news and updates\n- Direct contact with the team\n👥 Join the group: t.me/chef_house_cz\n\n📣 Our news and deals channel:\n👉 t.me/chef_house_cz',
         'courier_took': '🚴 Courier took your order #{order_id}!\n\nExpect delivery.',
         'profile': '📁 Profile\n\n🔗 ID: {user_id}\n💰 Balance: {balance:.2f} €\n📦 Orders: {orders}\n🗓 Date: {reg_date}',
         'use_buttons': 'Please use the menu buttons 👇',
@@ -578,12 +581,12 @@ def _finalize_order(user_id, lang, items, address):
     order_id = create_order(user_id, items, '—', address, is_referral)
     user_states.pop(user_id, None)
     clear_cart(user_id)
-    # Notify client
-    text = TEXTS[lang]['order_placed'].format(order_id=order_id)
-    bot.send_message(user_id, text, reply_markup=main_menu(lang))
-    # Invite to channel
+    # Notify client — message 1
+    bot.send_message(user_id, TEXTS[lang]['order_placed'].format(order_id=order_id), reply_markup=main_menu(lang))
+    # Notify client — message 2 after 2 seconds
+    time.sleep(2)
     try:
-        bot.send_message(user_id, f'👉 {CHANNEL_LINK}')
+        bot.send_message(user_id, TEXTS[lang]['order_placed_2'])
     except Exception:
         pass
     # Send to courier group
