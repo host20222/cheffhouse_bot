@@ -371,6 +371,27 @@ def inline_cities(lang='ru'):
     markup.add(types.InlineKeyboardButton('🏙 Прага / Prague', callback_data='city_prague'))
     return markup
 
+CAPTCHA_EMOJIS = ['⚗️', '🔒', '🌿', '🍄', '🧊', '🔑', '🚪', '🪪']
+
+def make_shop_captcha():
+    import random
+    correct = random.choice(CAPTCHA_EMOJIS)
+    pool = [e for e in CAPTCHA_EMOJIS if e != correct]
+    options = random.sample(pool, 3) + [correct]
+    random.shuffle(options)
+    return correct, options
+
+def inline_shop_captcha(options):
+    markup = types.InlineKeyboardMarkup(row_width=4)
+    buttons = [types.InlineKeyboardButton(e, callback_data=f'scaptcha_{e}') for e in options]
+    markup.add(*buttons)
+    return markup
+
+def inline_city_after_captcha():
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton('🏙 Прага / Prague', callback_data='city_prague'))
+    return markup
+
 def inline_products(lang='ru'):
     markup = types.InlineKeyboardMarkup()
     for i, p in enumerate(PRODUCTS[lang].keys()):
@@ -681,11 +702,20 @@ def change_to_russian(message):
     first_name = message.from_user.first_name or ''
     send_main(message.chat.id, 'ru', TEXTS['ru']['welcome'].format(name=first_name))
 
-# Shop entry
+# Shop entry — капча
 @bot.message_handler(func=lambda m: m.text in ['🛍 Магазин', '🛍 Shop'])
 def shop(message):
     lang = get_lang(message.from_user.id)
-    send_photo_inline(message.chat.id, TEXTS[lang]['shop_city'], inline_cities(lang))
+    correct, options = make_shop_captcha()
+    user_states[message.from_user.id] = {'state': 'shop_captcha', 'correct': correct}
+    text = (
+        f'🧪Chef House.\n\n'
+        f'🔒 Закрытый доступ.\n\n'
+        f'⚠️ Вход возможен только 18+.\n'
+        f'‼️ Подтвердите доступ.\n'
+        f'Выберите изображение где нарисовано {correct}'
+    )
+    bot.send_message(message.chat.id, text, reply_markup=inline_shop_captcha(options))
 
 # ─── INLINE CALLBACKS ─────────────────────────────────────────────────────────
 
@@ -694,6 +724,41 @@ def send_shop_products(chat_id, lang):
         bot.send_photo(chat_id, SHOP_PHOTO, caption=TEXTS[lang]['shop_products'], reply_markup=inline_products(lang))
     except Exception:
         bot.send_message(chat_id, TEXTS[lang]['shop_products'], reply_markup=inline_products(lang))
+
+@bot.callback_query_handler(func=lambda c: c.data.startswith('scaptcha_'))
+def cb_shop_captcha(call):
+    user_id = call.from_user.id
+    state = user_states.get(user_id)
+    chosen = call.data.split('scaptcha_', 1)[1]
+    if not (isinstance(state, dict) and state.get('state') == 'shop_captcha'):
+        bot.answer_callback_query(call.id)
+        return
+    correct = state.get('correct')
+    if chosen == correct:
+        user_states.pop(user_id, None)
+        bot.answer_callback_query(call.id, '✅')
+        try:
+            bot.edit_message_text(
+                'Хранилище.\n\nПрага.\nДоступ к подбору открыт.',
+                call.message.chat.id, call.message.message_id,
+                reply_markup=inline_city_after_captcha()
+            )
+        except Exception:
+            bot.send_message(call.message.chat.id, 'Хранилище.\n\nПрага.\nДоступ к подбору открыт.',
+                             reply_markup=inline_city_after_captcha())
+    else:
+        bot.answer_callback_query(call.id, '⛔ Неверно')
+        correct2, options2 = make_shop_captcha()
+        user_states[user_id] = {'state': 'shop_captcha', 'correct': correct2}
+        text = (
+            f'⛔ Доступ закрыт. Попробуйте снова.\n\n'
+            f'Выберите изображение где нарисовано {correct2}'
+        )
+        try:
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id,
+                                  reply_markup=inline_shop_captcha(options2))
+        except Exception:
+            bot.send_message(call.message.chat.id, text, reply_markup=inline_shop_captcha(options2))
 
 @bot.callback_query_handler(func=lambda c: c.data == 'city_prague')
 def cb_city(call):
