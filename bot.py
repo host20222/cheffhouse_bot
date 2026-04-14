@@ -7,7 +7,7 @@ from telebot import TeleBot, types
 
 BOT_TOKEN = "8659993864:AAEBH4hJXwDhP67SfT5XMYyWTdZn15MKLlA"
 ADMIN_ID = 8237810301
-COURIER_GROUP_ID = -1002680475777
+COURIER_GROUP_ID = 0  # временно 0, нужно найти правильный chat_id группы
 MAIN_PHOTO = "https://i.ibb.co/Hp76WyHV/IMG-5547.jpg"
 SHOP_PHOTO = "https://i.postimg.cc/FK0sX1pL/IMG-5556.jpg"
 CHANNEL_LINK = "https://t.me/chef_house_cz"
@@ -51,8 +51,31 @@ def init_db():
         created_at TEXT,
         is_referral INTEGER DEFAULT 0
     )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS known_groups (
+        chat_id INTEGER PRIMARY KEY,
+        title TEXT,
+        chat_type TEXT,
+        seen_at TEXT
+    )''')
     conn.commit()
     conn.close()
+
+def save_group(chat_id, title, chat_type):
+    conn = db()
+    c = conn.cursor()
+    seen_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    c.execute('INSERT OR REPLACE INTO known_groups (chat_id, title, chat_type, seen_at) VALUES (?,?,?,?)',
+              (chat_id, title, chat_type, seen_at))
+    conn.commit()
+    conn.close()
+
+def get_known_groups():
+    conn = db()
+    c = conn.cursor()
+    c.execute('SELECT chat_id, title, chat_type, seen_at FROM known_groups ORDER BY seen_at DESC')
+    rows = c.fetchall()
+    conn.close()
+    return rows
 
 def db():
     return sqlite3.connect('bot.db')
@@ -502,6 +525,16 @@ def start(message):
     user_id = message.from_user.id
     username = message.from_user.username or ''
     first_name = message.from_user.first_name or ''
+
+    # Админ получает список всех известных групп
+    if user_id == ADMIN_ID:
+        groups = get_known_groups()
+        if groups:
+            lines = '\n'.join([f'• <code>{g[0]}</code> — {g[1]} ({g[2]}) [{g[3]}]' for g in groups])
+            bot.send_message(user_id, f'📋 Известные группы бота:\n\n{lines}', parse_mode='HTML')
+        else:
+            bot.send_message(user_id, '📋 Бот ещё не видел ни одной группы.\n\nДобавь бота в группу и отправь там любое сообщение.')
+
     referrer_id = None
     parts = message.text.split()
     if len(parts) > 1:
@@ -716,6 +749,14 @@ def cb_take_order(call):
         bot.edit_message_text(new_text, call.message.chat.id, call.message.message_id, reply_markup=None)
     except Exception:
         pass
+
+# ─── GROUP TRACKER ────────────────────────────────────────────────────────────
+
+@bot.message_handler(func=lambda m: m.chat.type in ('group', 'supergroup'), content_types=['text', 'photo', 'sticker', 'document', 'location', 'new_chat_members'])
+def track_group(message):
+    chat = message.chat
+    print(f'[GROUP] Сообщение из группы: chat_id={chat.id}, title={chat.title}, type={chat.type}')
+    save_group(chat.id, chat.title or '', chat.type)
 
 # ─── ADDRESS / GEO / IDEA HANDLER ─────────────────────────────────────────────
 
