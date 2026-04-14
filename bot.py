@@ -354,11 +354,13 @@ def inline_cart_actions(lang='ru'):
             types.InlineKeyboardButton('✅ Оформить заказ', callback_data='checkout'),
             types.InlineKeyboardButton('🗑 Очистить', callback_data='clear_cart')
         )
+        markup.add(types.InlineKeyboardButton('🛍 Продолжить покупки', callback_data='continue_shopping'))
     else:
         markup.add(
             types.InlineKeyboardButton('✅ Place order', callback_data='checkout'),
             types.InlineKeyboardButton('🗑 Clear', callback_data='clear_cart')
         )
+        markup.add(types.InlineKeyboardButton('🛍 Continue shopping', callback_data='continue_shopping'))
     return markup
 
 def inline_courier_take(order_id):
@@ -384,14 +386,22 @@ def send_photo_inline(chat_id, text, markup):
     except Exception:
         bot.send_message(chat_id, text, reply_markup=markup)
 
+def parse_czk(price_str):
+    try:
+        return int(price_str.split(' CZK')[0].strip())
+    except Exception:
+        return 0
+
 def cart_text(user_id, lang):
     items = get_cart(user_id)
     if not items:
         return TEXTS[lang]['cart_empty'], None
     lines = ''
+    total = 0
     for product, qty, price in items:
         lines += f'• {product}\n  {qty} — {price}\n'
-    text = TEXTS[lang]['cart_header'] + lines + TEXTS[lang]['cart_total'].format(total='—')
+        total += parse_czk(price)
+    text = TEXTS[lang]['cart_header'] + lines + TEXTS[lang]['cart_total'].format(total=f'{total} CZK')
     return text, inline_cart_actions(lang)
 
 def send_order_to_courier(order_id, user_id, items, address, is_referral):
@@ -406,9 +416,14 @@ def send_order_to_courier(order_id, user_id, items, address, is_referral):
     )
     try:
         bot.send_message(COURIER_GROUP_ID, text, reply_markup=inline_courier_take(order_id))
+        print(f'Заказ #{order_id} отправлен в курьерскую группу {COURIER_GROUP_ID}')
     except Exception as e:
+        print(f'Ошибка отправки в группу: {e}')
         logging.error(f'Courier send error: {e}')
-        bot.send_message(ADMIN_ID, text, reply_markup=inline_courier_take(order_id))
+        try:
+            bot.send_message(ADMIN_ID, f'⚠️ Не удалось отправить заказ в группу!\n\n{text}', reply_markup=inline_courier_take(order_id))
+        except Exception as e2:
+            logging.error(f'Admin notify error: {e2}')
 
 def check_referral_bonus(user_id):
     u = get_user(user_id)
@@ -424,6 +439,8 @@ def check_referral_bonus(user_id):
 
 @bot.message_handler(commands=['start'])
 def start(message):
+    if message.chat.type != 'private':
+        return
     user_id = message.from_user.id
     username = message.from_user.username or ''
     first_name = message.from_user.first_name or ''
@@ -638,6 +655,8 @@ def cb_take_order(call):
 
 @bot.message_handler(content_types=['location'])
 def handle_location(message):
+    if message.chat.type != 'private':
+        return
     user_id = message.from_user.id
     lang = get_lang(user_id)
     state = user_states.get(user_id)
@@ -650,6 +669,8 @@ def handle_location(message):
 
 @bot.message_handler(func=lambda m: True)
 def handle_text(message):
+    if message.chat.type != 'private':
+        return
     user_id = message.from_user.id
     lang = get_lang(user_id)
     state = user_states.get(user_id)
