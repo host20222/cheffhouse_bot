@@ -288,15 +288,16 @@ def inline_cities(lang='ru'):
 
 def inline_products(lang='ru'):
     markup = types.InlineKeyboardMarkup()
-    for p in PRODUCTS[lang].keys():
-        markup.add(types.InlineKeyboardButton(p, callback_data=f'prod_{p}'))
+    for i, p in enumerate(PRODUCTS[lang].keys()):
+        markup.add(types.InlineKeyboardButton(p, callback_data=f'prod_{i}'))
     return markup
 
-def inline_qty(product, lang='ru'):
+def inline_qty(prod_idx, lang='ru'):
     markup = types.InlineKeyboardMarkup()
-    options = PRODUCTS[lang].get(product, [])
-    for qty, price in options:
-        markup.add(types.InlineKeyboardButton(f'{qty} — {price}', callback_data=f'qty_{product}|{qty}|{price}'))
+    product = list(PRODUCTS[lang].keys())[prod_idx]
+    options = PRODUCTS[lang][product]
+    for j, (qty, price) in enumerate(options):
+        markup.add(types.InlineKeyboardButton(f'{qty} — {price}', callback_data=f'qty_{prod_idx}_{j}'))
     markup.add(types.InlineKeyboardButton('◀️ Назад' if lang == 'ru' else '◀️ Back', callback_data='back_to_products'))
     return markup
 
@@ -482,13 +483,17 @@ def referral(message):
     send_photo_inline(message.chat.id, text, main_menu(lang))
 
 # Language
-@bot.message_handler(func=lambda m: m.text in ['🇺🇸 Change the language', '🇷🇺 Сменить язык'])
-def change_language(message):
-    lang = get_lang(message.from_user.id)
-    new_lang = 'en' if lang == 'ru' else 'ru'
-    set_lang(message.from_user.id, new_lang)
+@bot.message_handler(func=lambda m: m.text == '🇺🇸 Change the language')
+def change_to_english(message):
+    set_lang(message.from_user.id, 'en')
     first_name = message.from_user.first_name or ''
-    send_main(message.chat.id, new_lang, TEXTS[new_lang]['welcome'].format(name=first_name))
+    send_main(message.chat.id, 'en', TEXTS['en']['welcome'].format(name=first_name))
+
+@bot.message_handler(func=lambda m: m.text == '🇷🇺 Сменить язык')
+def change_to_russian(message):
+    set_lang(message.from_user.id, 'ru')
+    first_name = message.from_user.first_name or ''
+    send_main(message.chat.id, 'ru', TEXTS['ru']['welcome'].format(name=first_name))
 
 # Shop entry
 @bot.message_handler(func=lambda m: m.text in ['🛍 Магазин', '🛍 Shop'])
@@ -513,20 +518,25 @@ def cb_back_products(call):
 @bot.callback_query_handler(func=lambda c: c.data.startswith('prod_'))
 def cb_product(call):
     lang = get_lang(call.from_user.id)
-    product = call.data[5:]
+    prod_idx = int(call.data.split('_')[1])
+    product = list(PRODUCTS[lang].keys())[prod_idx]
     bot.answer_callback_query(call.id)
-    text = PRODUCT_DESCRIPTIONS.get(product, product + '\n\n👇 Выберите количество:')
-    bot.send_message(call.message.chat.id, text, reply_markup=inline_qty(product, lang))
+    fallback = product + ('\n\n👇 Выберите количество:' if lang == 'ru' else '\n\n👇 Choose quantity:')
+    text = PRODUCT_DESCRIPTIONS.get(product, fallback)
+    try:
+        bot.send_message(call.message.chat.id, text, reply_markup=inline_qty(prod_idx, lang))
+    except Exception as e:
+        logging.error(f'cb_product send error: {e}')
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('qty_'))
 def cb_qty(call):
     lang = get_lang(call.from_user.id)
     bot.answer_callback_query(call.id)
-    _, rest = call.data.split('_', 1)
-    parts = rest.split('|')
-    if len(parts) != 3:
-        return
-    product, qty, price = parts
+    parts = call.data.split('_')
+    prod_idx = int(parts[1])
+    qty_idx = int(parts[2])
+    product = list(PRODUCTS[lang].keys())[prod_idx]
+    qty, price = PRODUCTS[lang][product][qty_idx]
     add_to_cart(call.from_user.id, product, qty, price)
     text = TEXTS[lang]['added_to_cart'].format(product=product, qty=qty, price=price)
     bot.send_message(call.message.chat.id, text, reply_markup=inline_after_cart(lang))
