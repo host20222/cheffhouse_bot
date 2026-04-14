@@ -7,7 +7,7 @@ from telebot import TeleBot, types
 
 BOT_TOKEN = "8659993864:AAEBH4hJXwDhP67SfT5XMYyWTdZn15MKLlA"
 ADMIN_ID = 8237810301
-COURIER_GROUP_ID = -1001111111111
+COURIER_GROUP_ID = -1002680475777
 MAIN_PHOTO = "https://i.ibb.co/Hp76WyHV/IMG-5547.jpg"
 CHANNEL_LINK = "https://t.me/chef_house_cz"
 
