@@ -368,12 +368,20 @@ def inline_after_cart(lang='ru'):
     if lang == 'ru':
         markup.add(
             types.InlineKeyboardButton('🛒 Корзина', callback_data='show_cart'),
-            types.InlineKeyboardButton('🛍 Продолжить', callback_data='continue_shopping')
+            types.InlineKeyboardButton('🛍 Продолжить', callback_data='continue_shopping'),
+        )
+        markup.add(
+            types.InlineKeyboardButton('✅ Оформить заказ', callback_data='checkout'),
+            types.InlineKeyboardButton('◀️ Назад', callback_data='back_to_products'),
         )
     else:
         markup.add(
             types.InlineKeyboardButton('🛒 Cart', callback_data='show_cart'),
-            types.InlineKeyboardButton('🛍 Continue', callback_data='continue_shopping')
+            types.InlineKeyboardButton('🛍 Continue', callback_data='continue_shopping'),
+        )
+        markup.add(
+            types.InlineKeyboardButton('✅ Place order', callback_data='checkout'),
+            types.InlineKeyboardButton('◀️ Back', callback_data='back_to_products'),
         )
     return markup
 
@@ -404,17 +412,19 @@ user_states = {}
 
 # ─── HELPERS ─────────────────────────────────────────────────────────────────
 
-def send_main(chat_id, lang, text):
+def send_main(chat_id, lang, text, chat_type='private'):
+    kb = main_menu(lang) if chat_type == 'private' else None
     try:
-        bot.send_photo(chat_id, MAIN_PHOTO, caption=text, reply_markup=main_menu(lang))
+        bot.send_photo(chat_id, MAIN_PHOTO, caption=text, reply_markup=kb)
     except Exception:
-        bot.send_message(chat_id, text, reply_markup=main_menu(lang))
+        bot.send_message(chat_id, text, reply_markup=kb)
 
-def send_photo_inline(chat_id, text, markup):
+def send_photo_inline(chat_id, text, markup, chat_type='private'):
+    kb = markup if chat_type == 'private' else None
     try:
-        bot.send_photo(chat_id, MAIN_PHOTO, caption=text, reply_markup=markup)
+        bot.send_photo(chat_id, MAIN_PHOTO, caption=text, reply_markup=kb)
     except Exception:
-        bot.send_message(chat_id, text, reply_markup=markup)
+        bot.send_message(chat_id, text, reply_markup=kb)
 
 def parse_price(price_str):
     try:
@@ -764,5 +774,16 @@ def _finalize_order(user_id, lang, items, address):
 
 if __name__ == '__main__':
     init_db()
+    # Показывать команды только в личных чатах, убрать из групп
+    try:
+        bot.set_my_commands(
+            [types.BotCommand('start', 'Запустить бота')],
+            scope=types.BotCommandScopeAllPrivateChats()
+        )
+        bot.delete_my_commands(scope=types.BotCommandScopeAllGroupChats())
+        bot.delete_my_commands(scope=types.BotCommandScopeAllChatAdministrators())
+        print('Команды бота настроены: только private чаты')
+    except Exception as e:
+        print(f'Ошибка настройки команд: {e}')
     print('Chef House бот запущен!')
     bot.polling(none_stop=True)
