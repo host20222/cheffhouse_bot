@@ -518,10 +518,9 @@ def check_referral_bonus(user_id):
 
 # ─── GROUP TRACKER (должен быть первым, до handle_text) ───────────────────────
 
-@bot.message_handler(content_types=['text', 'photo', 'sticker', 'document', 'location', 'new_chat_members', 'left_chat_member'])
+@bot.message_handler(func=lambda m: m.chat.type in ('group', 'supergroup'),
+                     content_types=['text', 'photo', 'sticker', 'document', 'location', 'new_chat_members', 'left_chat_member'])
 def track_group(message):
-    if message.chat.type not in ('group', 'supergroup'):
-        return
     chat = message.chat
     print(f'[GROUP] Сообщение из группы: chat_id={chat.id}, title={chat.title}, type={chat.type}')
     save_group(chat.id, chat.title or '', chat.type)
