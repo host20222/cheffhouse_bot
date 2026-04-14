@@ -201,15 +201,64 @@ PRODUCTS = {
     'ru': {
         '🥦 Premium broccoli': [('1 шт', '300 CZK'), ('2 шт', '599 CZK'), ('3 шт', '750 CZK'), ('4 шт', '1000 CZK')],
         '🌸 Lotus seed flour (Pure 92%)': [('1 кг', '2800 CZK'), ('2 кг', '5300 CZK'), ('3 кг', '7500 CZK')],
-        '🍬 Wasanbon sugar': [('0.5 кг', '700 CZK'), ('1 кг', '1200 CZK'), ('2 кг', '2199 CZK'), ('3 кг', '3099 CZK'), ('4 кг', '3999 CZK')],
-        '🎧 Клубная музыка': [('1 мес', '300 CZK'), ('2 мес', '600 CZK'), ('3 мес', '800 CZK'), ('4 мес', '1000 CZK')],
+        '🍬 Wasanbon sugar (Pure 84%)': [('0.5 кг', '700 CZK'), ('1 кг', '1200 CZK'), ('2 кг', '2199 CZK'), ('3 кг', '3099 CZK'), ('4 кг', '3999 CZK')],
+        '🎧 Клубная музыка (диски!)': [('1 мес', '300 CZK'), ('2 мес', '600 CZK'), ('3 мес', '800 CZK'), ('4 мес', '1000 CZK')],
     },
     'en': {
         '🥦 Premium broccoli': [('1 pc', '300 CZK'), ('2 pc', '599 CZK'), ('3 pc', '750 CZK'), ('4 pc', '1000 CZK')],
         '🌸 Lotus seed flour (Pure 92%)': [('1 kg', '2800 CZK'), ('2 kg', '5300 CZK'), ('3 kg', '7500 CZK')],
-        '🍬 Wasanbon sugar': [('0.5 kg', '700 CZK'), ('1 kg', '1200 CZK'), ('2 kg', '2199 CZK'), ('3 kg', '3099 CZK'), ('4 kg', '3999 CZK')],
-        '🎧 Club music': [('1 mo', '300 CZK'), ('2 mo', '600 CZK'), ('3 mo', '800 CZK'), ('4 mo', '1000 CZK')],
+        '🍬 Wasanbon sugar (Pure 84%)': [('0.5 kg', '700 CZK'), ('1 kg', '1200 CZK'), ('2 kg', '2199 CZK'), ('3 kg', '3099 CZK'), ('4 kg', '3999 CZK')],
+        '🎧 Club music (discs!)': [('1 mo', '300 CZK'), ('2 mo', '600 CZK'), ('3 mo', '800 CZK'), ('4 mo', '1000 CZK')],
     }
+}
+
+PRODUCT_DESCRIPTIONS = {
+    '🥦 Premium broccoli': (
+        '🥦 Premium broccoli\n\n'
+        'Выращено с настроением.\n'
+        'Собрано для тех, кто чувствует больше.\n\n'
+        'Лёгкость, ясность и правильный вайб\n'
+        'в каждой детали.\n\n'
+        '✨ Clean energy. Right vibe.\n\n'
+        '📍 Only Prague\n\n'
+        '👇 Выберите количество:'
+    ),
+    '🌸 Lotus seed flour (Pure 92%)': (
+        '🌸 Lotus seed flour (Pure 92%)\n\n'
+        'Чистый состав. Лёгкая текстура.\n'
+        'Баланс и спокойное ощущение внутри.\n\n'
+        'Для тех, кто выбирает качество\n'
+        'и ровный ритм без перегрузки.\n\n'
+        '✨ A gentle lift. A closer feeling.\n\n'
+        '👇 Выберите количество:'
+    ),
+    '🍬 Wasanbon sugar (Pure 84%)': (
+        '🍬 Wasanbon sugar (Pure 84%)\n\n'
+        'Мягкая сладость с тонкой текстурой.\n'
+        'Лёгкий прилив тепла и настроения.\n\n'
+        'Создано для уютных вечеров,\n'
+        'разговоров и моментов ближе.\n\n'
+        '✨ Soft energy. Warm connection.\n\n'
+        '👇 Выберите количество:'
+    ),
+    '🎧 Клубная музыка (диски!)': (
+        '🎧 Клубная музыка\n\n'
+        'Физические диски с подборкой\n'
+        'клубных треков и ночного звучания.\n\n'
+        'Чистый звук. Атмосфера движения.\n'
+        'То, что задаёт настроение.\n\n'
+        '✨ Late night energy.\n\n'
+        '👇 Выберите количество:'
+    ),
+    '🎧 Club music (discs!)': (
+        '🎧 Club music\n\n'
+        'Physical discs with a curated selection\n'
+        'of club tracks and night vibes.\n\n'
+        'Clean sound. Movement atmosphere.\n'
+        'Sets the mood right.\n\n'
+        '✨ Late night energy.\n\n'
+        '👇 Choose quantity:'
+    ),
 }
 
 # ─── KEYBOARDS ────────────────────────────────────────────────────────────────
@@ -466,7 +515,7 @@ def cb_product(call):
     lang = get_lang(call.from_user.id)
     product = call.data[5:]
     bot.answer_callback_query(call.id)
-    text = TEXTS[lang]['choose_qty'] + product
+    text = PRODUCT_DESCRIPTIONS.get(product, product + '\n\n👇 Выберите количество:')
     bot.send_message(call.message.chat.id, text, reply_markup=inline_qty(product, lang))
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('qty_'))
