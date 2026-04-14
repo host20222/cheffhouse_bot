@@ -742,15 +742,17 @@ def shop(message):
 
 def send_shop_city_photo(chat_id, lang):
     try:
-        bot.send_photo(chat_id, SHOP_PHOTO, caption=TEXTS[lang]['shop_city'], reply_markup=inline_cities(lang))
+        bot.send_photo(chat_id, MAIN_PHOTO, caption=TEXTS[lang]['shop_city'], reply_markup=inline_cities(lang))
     except Exception:
         bot.send_message(chat_id, TEXTS[lang]['shop_city'], reply_markup=inline_cities(lang))
 
+SHOP_PRODUCTS_TEXT = 'Хранилище.\n\nПрага.\nДоступ к подбору открыт.'
+
 def send_shop_products(chat_id, lang):
     try:
-        bot.send_photo(chat_id, SHOP_PHOTO, caption=TEXTS[lang]['shop_products'], reply_markup=inline_products(lang))
+        bot.send_photo(chat_id, SHOP_PHOTO, caption=SHOP_PRODUCTS_TEXT, reply_markup=inline_products(lang))
     except Exception:
-        bot.send_message(chat_id, TEXTS[lang]['shop_products'], reply_markup=inline_products(lang))
+        bot.send_message(chat_id, SHOP_PRODUCTS_TEXT, reply_markup=inline_products(lang))
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('scaptcha_'))
 def cb_shop_captcha(call):
