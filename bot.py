@@ -516,6 +516,16 @@ def check_referral_bonus(user_id):
         return True
     return False
 
+# ─── GROUP TRACKER (должен быть первым, до handle_text) ───────────────────────
+
+@bot.message_handler(content_types=['text', 'photo', 'sticker', 'document', 'location', 'new_chat_members', 'left_chat_member'])
+def track_group(message):
+    if message.chat.type not in ('group', 'supergroup'):
+        return
+    chat = message.chat
+    print(f'[GROUP] Сообщение из группы: chat_id={chat.id}, title={chat.title}, type={chat.type}')
+    save_group(chat.id, chat.title or '', chat.type)
+
 # ─── HANDLERS ─────────────────────────────────────────────────────────────────
 
 @bot.message_handler(commands=['start'])
@@ -749,14 +759,6 @@ def cb_take_order(call):
         bot.edit_message_text(new_text, call.message.chat.id, call.message.message_id, reply_markup=None)
     except Exception:
         pass
-
-# ─── GROUP TRACKER ────────────────────────────────────────────────────────────
-
-@bot.message_handler(func=lambda m: m.chat.type in ('group', 'supergroup'), content_types=['text', 'photo', 'sticker', 'document', 'location', 'new_chat_members'])
-def track_group(message):
-    chat = message.chat
-    print(f'[GROUP] Сообщение из группы: chat_id={chat.id}, title={chat.title}, type={chat.type}')
-    save_group(chat.id, chat.title or '', chat.type)
 
 # ─── ADDRESS / GEO / IDEA HANDLER ─────────────────────────────────────────────
 
