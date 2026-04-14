@@ -213,52 +213,84 @@ PRODUCTS = {
 }
 
 PRODUCT_DESCRIPTIONS = {
-    '🥦 Premium broccoli': (
-        '🥦 Premium broccoli\n\n'
-        'Выращено с настроением.\n'
-        'Собрано для тех, кто чувствует больше.\n\n'
-        'Лёгкость, ясность и правильный вайб\n'
-        'в каждой детали.\n\n'
-        '✨ Clean energy. Right vibe.\n\n'
-        '📍 Only Prague\n\n'
-        '👇 Выберите количество:'
-    ),
-    '🌸 Lotus seed flour (Pure 92%)': (
-        '🌸 Lotus seed flour (Pure 92%)\n\n'
-        'Чистый состав. Лёгкая текстура.\n'
-        'Баланс и спокойное ощущение внутри.\n\n'
-        'Для тех, кто выбирает качество\n'
-        'и ровный ритм без перегрузки.\n\n'
-        '✨ A gentle lift. A closer feeling.\n\n'
-        '👇 Выберите количество:'
-    ),
-    '🍬 Wasanbon sugar (Pure 84%)': (
-        '🍬 Wasanbon sugar (Pure 84%)\n\n'
-        'Мягкая сладость с тонкой текстурой.\n'
-        'Лёгкий прилив тепла и настроения.\n\n'
-        'Создано для уютных вечеров,\n'
-        'разговоров и моментов ближе.\n\n'
-        '✨ Soft energy. Warm connection.\n\n'
-        '👇 Выберите количество:'
-    ),
-    '🎧 Клубная музыка (диски!)': (
-        '🎧 Клубная музыка\n\n'
-        'Физические диски с подборкой\n'
-        'клубных треков и ночного звучания.\n\n'
-        'Чистый звук. Атмосфера движения.\n'
-        'То, что задаёт настроение.\n\n'
-        '✨ Late night energy.\n\n'
-        '👇 Выберите количество:'
-    ),
-    '🎧 Club music (discs!)': (
-        '🎧 Club music\n\n'
-        'Physical discs with a curated selection\n'
-        'of club tracks and night vibes.\n\n'
-        'Clean sound. Movement atmosphere.\n'
-        'Sets the mood right.\n\n'
-        '✨ Late night energy.\n\n'
-        '👇 Choose quantity:'
-    ),
+    'ru': {
+        '🥦 Premium broccoli': (
+            '🥦 Premium broccoli\n\n'
+            'Выращено с настроением.\n'
+            'Собрано для тех, кто чувствует больше.\n\n'
+            'Лёгкость, ясность и правильный вайб\n'
+            'в каждой детали.\n\n'
+            '✨ Clean energy. Right vibe.\n\n'
+            '📍 Only Prague\n\n'
+            '👇 Выберите количество:'
+        ),
+        '🌸 Lotus seed flour (Pure 92%)': (
+            '🌸 Lotus seed flour (Pure 92%)\n\n'
+            'Чистый состав. Лёгкая текстура.\n'
+            'Баланс и спокойное ощущение внутри.\n\n'
+            'Для тех, кто выбирает качество\n'
+            'и ровный ритм без перегрузки.\n\n'
+            '✨ A gentle lift. A closer feeling.\n\n'
+            '👇 Выберите количество:'
+        ),
+        '🍬 Wasanbon sugar (Pure 84%)': (
+            '🍬 Wasanbon sugar (Pure 84%)\n\n'
+            'Мягкая сладость с тонкой текстурой.\n'
+            'Лёгкий прилив тепла и настроения.\n\n'
+            'Создано для уютных вечеров,\n'
+            'разговоров и моментов ближе.\n\n'
+            '✨ Soft energy. Warm connection.\n\n'
+            '👇 Выберите количество:'
+        ),
+        '🎧 Клубная музыка (диски!)': (
+            '🎧 Клубная музыка\n\n'
+            'Физические диски с подборкой\n'
+            'клубных треков и ночного звучания.\n\n'
+            'Чистый звук. Атмосфера движения.\n'
+            'То, что задаёт настроение.\n\n'
+            '✨ Late night energy.\n\n'
+            '👇 Выберите количество:'
+        ),
+    },
+    'en': {
+        '🥦 Premium broccoli': (
+            '🥦 Premium broccoli\n\n'
+            'Grown with a good mood.\n'
+            'Harvested for those who feel more.\n\n'
+            'Lightness, clarity and the right vibe\n'
+            'in every detail.\n\n'
+            '✨ Clean energy. Right vibe.\n\n'
+            '📍 Only Prague\n\n'
+            '👇 Choose quantity:'
+        ),
+        '🌸 Lotus seed flour (Pure 92%)': (
+            '🌸 Lotus seed flour (Pure 92%)\n\n'
+            'Clean composition. Light texture.\n'
+            'Balance and a calm feeling inside.\n\n'
+            'For those who choose quality\n'
+            'and a steady rhythm without overload.\n\n'
+            '✨ A gentle lift. A closer feeling.\n\n'
+            '👇 Choose quantity:'
+        ),
+        '🍬 Wasanbon sugar (Pure 84%)': (
+            '🍬 Wasanbon sugar (Pure 84%)\n\n'
+            'Soft sweetness with a fine texture.\n'
+            'A gentle rush of warmth and mood.\n\n'
+            'Made for cozy evenings,\n'
+            'conversations and closer moments.\n\n'
+            '✨ Soft energy. Warm connection.\n\n'
+            '👇 Choose quantity:'
+        ),
+        '🎧 Club music (discs!)': (
+            '🎧 Club music\n\n'
+            'Physical discs with a curated selection\n'
+            'of club tracks and night vibes.\n\n'
+            'Clean sound. Movement atmosphere.\n'
+            'Sets the mood right.\n\n'
+            '✨ Late night energy.\n\n'
+            '👇 Choose quantity:'
+        ),
+    },
 }
 
 # ─── KEYBOARDS ────────────────────────────────────────────────────────────────
@@ -522,7 +554,7 @@ def cb_product(call):
     product = list(PRODUCTS[lang].keys())[prod_idx]
     bot.answer_callback_query(call.id)
     fallback = product + ('\n\n👇 Выберите количество:' if lang == 'ru' else '\n\n👇 Choose quantity:')
-    text = PRODUCT_DESCRIPTIONS.get(product, fallback)
+    text = PRODUCT_DESCRIPTIONS[lang].get(product, fallback)
     try:
         bot.send_message(call.message.chat.id, text, reply_markup=inline_qty(prod_idx, lang))
     except Exception as e:
