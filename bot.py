@@ -769,10 +769,7 @@ def cb_shop_captcha(call):
         bot.answer_callback_query(call.id, '✅')
         lang = get_lang(user_id)
         try:
-            bot.edit_message_text(
-                'Хранилище.\n\nПрага.\nДоступ к подбору открыт.',
-                call.message.chat.id, call.message.message_id
-            )
+            bot.delete_message(call.message.chat.id, call.message.message_id)
         except Exception:
             pass
         send_shop_city_photo(call.message.chat.id, lang)
