@@ -7,7 +7,7 @@ from telebot import TeleBot, types
 
 BOT_TOKEN = "8659993864:AAEBH4hJXwDhP67SfT5XMYyWTdZn15MKLlA"
 ADMIN_ID = 8237810301
-COURIER_GROUP_ID = 0  # временно 0, нужно найти правильный chat_id группы
+COURIER_GROUP_ID = -1003953531389
 MAIN_PHOTO = "https://i.ibb.co/Hp76WyHV/IMG-5547.jpg"
 SHOP_PHOTO = "https://i.postimg.cc/FK0sX1pL/IMG-5556.jpg"
 CHANNEL_LINK = "https://t.me/chef_house_cz"
