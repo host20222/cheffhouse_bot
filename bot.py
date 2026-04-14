@@ -441,6 +441,7 @@ def cart_text(user_id, lang):
     return text, inline_cart_actions(lang)
 
 def send_order_to_courier(order_id, user_id, items, address, is_referral):
+    print(f'[COURIER] Вызов send_order_to_courier: order_id={order_id}, user_id={user_id}, group={COURIER_GROUP_ID}')
     lines = '\n'.join([f'• {p} {q} — {pr}' for p, q, pr in items])
     ref_note = '\n\n🎁 Реферальный заказ! +1 брокколи бесплатно' if is_referral else ''
     text = (
@@ -450,15 +451,19 @@ def send_order_to_courier(order_id, user_id, items, address, is_referral):
         f'📍 Адрес: {address}'
         f'{ref_note}'
     )
+    print(f'[COURIER] Отправляю сообщение в группу {COURIER_GROUP_ID}...')
     try:
         bot.send_message(COURIER_GROUP_ID, text, reply_markup=inline_courier_take(order_id))
-        print(f'Заказ #{order_id} отправлен в курьерскую группу {COURIER_GROUP_ID}')
+        print(f'[COURIER] ✅ Успешно отправлено в группу {COURIER_GROUP_ID}')
     except Exception as e:
-        print(f'Ошибка отправки в группу: {e}')
+        print(f'[COURIER] ❌ Ошибка отправки в группу {COURIER_GROUP_ID}: {e}')
         logging.error(f'Courier send error: {e}')
+        print(f'[COURIER] Fallback: отправляю в ADMIN_ID={ADMIN_ID}')
         try:
             bot.send_message(ADMIN_ID, f'⚠️ Не удалось отправить заказ в группу!\n\n{text}', reply_markup=inline_courier_take(order_id))
+            print(f'[COURIER] Fallback отправлен админу')
         except Exception as e2:
+            print(f'[COURIER] ❌ Fallback тоже не удался: {e2}')
             logging.error(f'Admin notify error: {e2}')
 
 def check_referral_bonus(user_id):
@@ -733,8 +738,10 @@ def handle_text(message):
         bot.send_message(message.chat.id, TEXTS[lang]['use_buttons'], reply_markup=main_menu(lang))
 
 def _finalize_order(user_id, lang, items, address):
+    print(f'[ORDER] _finalize_order: user_id={user_id}, address={address}, items={items}')
     is_referral = 1 if check_referral_bonus(user_id) else 0
     order_id = create_order(user_id, items, '—', address, is_referral)
+    print(f'[ORDER] Заказ создан: #{order_id}, is_referral={is_referral}')
     user_states.pop(user_id, None)
     clear_cart(user_id)
     # Notify client — message 1
