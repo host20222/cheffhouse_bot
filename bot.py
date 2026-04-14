@@ -9,6 +9,7 @@ BOT_TOKEN = "8659993864:AAEBH4hJXwDhP67SfT5XMYyWTdZn15MKLlA"
 ADMIN_ID = 8237810301
 COURIER_GROUP_ID = -1002680475777
 MAIN_PHOTO = "https://i.ibb.co/Hp76WyHV/IMG-5547.jpg"
+SHOP_PHOTO = "https://i.postimg.cc/FK0sX1pL/IMG-5556.jpg"
 CHANNEL_LINK = "https://t.me/chef_house_cz"
 
 bot = TeleBot(BOT_TOKEN)
@@ -199,17 +200,26 @@ TEXTS = {
 
 PRODUCTS = {
     'ru': {
-        '🥦 Premium broccoli': [('1 шт', '300 CZK ≈ 12€'), ('2 шт', '600 CZK ≈ 24€'), ('3 шт', '750 CZK ≈ 30€'), ('4 шт', '1000 CZK ≈ 40€')],
-        '🌸 Мука семян лотоса (Pure 92%)': [('1 кг', '2800 CZK ≈ 112€'), ('2 кг', '5300 CZK ≈ 212€'), ('3 кг', '7500 CZK ≈ 300€')],
-        '❤️ Сахар Wasanbon': [('0.5', '700 CZK ≈ 28€'), ('1', '1200 CZK ≈ 48€'), ('2', '2200 CZK ≈ 88€'), ('3', '3100 CZK ≈ 124€'), ('4', '3900 CZK ≈ 156€')],
-        '🎧 Клубная музыка (диски!)': [('1 мес', '300 CZK ≈ 12€'), ('2 мес', '600 CZK ≈ 24€'), ('3 мес', '800 CZK ≈ 32€'), ('4 мес', '1000 CZK ≈ 40€')],
+        '🥦 Premium broccoli':            [('1 шт', '300 CZK'), ('2 шт', '600 CZK'), ('3 шт', '750 CZK'), ('4 шт', '1000 CZK')],
+        '🍄 Wild forest selection':        [('1', '500 CZK'), ('3', '1400 CZK'), ('5', '2200 CZK')],
+        '🌸 Мука семян лотоса (Pure 92%)': [('1 кг', '2800 CZK'), ('2 кг', '5300 CZK'), ('3 кг', '7500 CZK')],
+        '❤️ Сахар Wasanbon':               [('0.5', '700 CZK'), ('1', '1200 CZK'), ('2', '2200 CZK'), ('3', '3100 CZK'), ('4', '3900 CZK')],
+        '🎧 Клубная музыка (диски!)':       [('1 мес', '300 CZK'), ('2 мес', '600 CZK'), ('3 мес', '800 CZK'), ('4 мес', '1000 CZK')],
     },
     'en': {
-        '🥦 Premium broccoli': [('1 pc', '300 CZK ≈ 12€'), ('2 pc', '600 CZK ≈ 24€'), ('3 pc', '750 CZK ≈ 30€'), ('4 pc', '1000 CZK ≈ 40€')],
-        '🌸 Lotus seed flour (Pure 92%)': [('1 kg', '2800 CZK ≈ 112€'), ('2 kg', '5300 CZK ≈ 212€'), ('3 kg', '7500 CZK ≈ 300€')],
-        '❤️ Wasanbon sugar': [('0.5', '700 CZK ≈ 28€'), ('1', '1200 CZK ≈ 48€'), ('2', '2200 CZK ≈ 88€'), ('3', '3100 CZK ≈ 124€'), ('4', '3900 CZK ≈ 156€')],
-        '🎧 Club music (discs!)': [('1 mo', '300 CZK ≈ 12€'), ('2 mo', '600 CZK ≈ 24€'), ('3 mo', '800 CZK ≈ 32€'), ('4 mo', '1000 CZK ≈ 40€')],
+        '🥦 Premium broccoli':             [('1 pc', '12€'), ('2 pc', '24€'), ('3 pc', '30€'), ('4 pc', '40€')],
+        '🍄 Wild forest selection':         [('1', '20€'), ('3', '56€'), ('5', '88€')],
+        '🌸 Lotus seed flour (Pure 92%)':   [('1 kg', '112€'), ('2 kg', '212€'), ('3 kg', '300€')],
+        '❤️ Wasanbon sugar':                [('0.5', '28€'), ('1', '48€'), ('2', '88€'), ('3', '124€'), ('4', '156€')],
+        '🎧 Club music (discs!)':           [('1 mo', '12€'), ('2 mo', '24€'), ('3 mo', '32€'), ('4 mo', '40€')],
     }
+}
+
+PRODUCT_PHOTOS = {
+    '🥦 Premium broccoli':            'https://i.postimg.cc/J47y33q7/IMG-4367.jpg',
+    '🍄 Wild forest selection':        'https://i.postimg.cc/bNYG00Tw/IMG-4357.jpg',
+    '🌸 Мука семян лотоса (Pure 92%)': 'https://i.postimg.cc/CMsBfrjL/IMG-5568.jpg',
+    '🌸 Lotus seed flour (Pure 92%)':  'https://i.postimg.cc/CMsBfrjL/IMG-5568.jpg',
 }
 
 PRODUCT_DESCRIPTIONS = {
@@ -222,6 +232,16 @@ PRODUCT_DESCRIPTIONS = {
             'в каждой детали.\n\n'
             '✨ Clean energy. Right vibe.\n\n'
             '📍 Only Prague\n\n'
+            '👇 Выберите количество:'
+        ),
+        '🍄 Wild forest selection': (
+            '🍄 Forest selection\n\n'
+            'Более 5 видов на выбор.\n\n'
+            'Разные текстуры, оттенки и характер.\n\n'
+            'Каждый найдёт своё:\n'
+            'от мягкого и лёгкого до насыщенного и глубокого.\n\n'
+            'Сезонный сбор. Натуральное качество.\n\n'
+            '✨ Choose your vibe.\n\n'
             '👇 Выберите количество:'
         ),
         '🌸 Мука семян лотоса (Pure 92%)': (
@@ -261,6 +281,16 @@ PRODUCT_DESCRIPTIONS = {
             'in every detail.\n\n'
             '✨ Clean energy. Right vibe.\n\n'
             '📍 Only Prague\n\n'
+            '👇 Choose quantity:'
+        ),
+        '🍄 Wild forest selection': (
+            '🍄 Forest selection\n\n'
+            'Более 5 видов на выбор.\n\n'
+            'Разные текстуры, оттенки и характер.\n\n'
+            'Каждый найдёт своё:\n'
+            'от мягкого и лёгкого до насыщенного и глубокого.\n\n'
+            'Сезонный сбор. Натуральное качество.\n\n'
+            '✨ Choose your vibe.\n\n'
             '👇 Choose quantity:'
         ),
         '🌸 Lotus seed flour (Pure 92%)': (
@@ -386,11 +416,15 @@ def send_photo_inline(chat_id, text, markup):
     except Exception:
         bot.send_message(chat_id, text, reply_markup=markup)
 
-def parse_czk(price_str):
+def parse_price(price_str):
     try:
-        return int(price_str.split(' CZK')[0].strip())
+        if 'CZK' in price_str:
+            return int(price_str.split(' CZK')[0].strip())
+        elif '€' in price_str:
+            return int(price_str.replace('€', '').strip())
     except Exception:
-        return 0
+        pass
+    return 0
 
 def cart_text(user_id, lang):
     items = get_cart(user_id)
@@ -400,8 +434,10 @@ def cart_text(user_id, lang):
     total = 0
     for product, qty, price in items:
         lines += f'• {product}\n  {qty} — {price}\n'
-        total += parse_czk(price)
-    text = TEXTS[lang]['cart_header'] + lines + TEXTS[lang]['cart_total'].format(total=f'{total} CZK')
+        total += parse_price(price)
+    first_price = items[0][2] if items else ''
+    total_str = f'{total} CZK' if 'CZK' in first_price else f'{total}€'
+    text = TEXTS[lang]['cart_header'] + lines + TEXTS[lang]['cart_total'].format(total=total_str)
     return text, inline_cart_actions(lang)
 
 def send_order_to_courier(order_id, user_id, items, address, is_referral):
@@ -552,17 +588,23 @@ def shop(message):
 
 # ─── INLINE CALLBACKS ─────────────────────────────────────────────────────────
 
+def send_shop_products(chat_id, lang):
+    try:
+        bot.send_photo(chat_id, SHOP_PHOTO, caption=TEXTS[lang]['shop_products'], reply_markup=inline_products(lang))
+    except Exception:
+        bot.send_message(chat_id, TEXTS[lang]['shop_products'], reply_markup=inline_products(lang))
+
 @bot.callback_query_handler(func=lambda c: c.data == 'city_prague')
 def cb_city(call):
     lang = get_lang(call.from_user.id)
     bot.answer_callback_query(call.id)
-    bot.send_message(call.message.chat.id, TEXTS[lang]['shop_products'], reply_markup=inline_products(lang))
+    send_shop_products(call.message.chat.id, lang)
 
 @bot.callback_query_handler(func=lambda c: c.data == 'back_to_products')
 def cb_back_products(call):
     lang = get_lang(call.from_user.id)
     bot.answer_callback_query(call.id)
-    bot.send_message(call.message.chat.id, TEXTS[lang]['shop_products'], reply_markup=inline_products(lang))
+    send_shop_products(call.message.chat.id, lang)
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('prod_'))
 def cb_product(call):
@@ -572,10 +614,12 @@ def cb_product(call):
     bot.answer_callback_query(call.id)
     fallback = product + ('\n\n👇 Выберите количество:' if lang == 'ru' else '\n\n👇 Choose quantity:')
     text = PRODUCT_DESCRIPTIONS[lang].get(product, fallback)
+    photo = PRODUCT_PHOTOS.get(product, MAIN_PHOTO)
     try:
-        bot.send_message(call.message.chat.id, text, reply_markup=inline_qty(prod_idx, lang))
+        bot.send_photo(call.message.chat.id, photo, caption=text, reply_markup=inline_qty(prod_idx, lang))
     except Exception as e:
         logging.error(f'cb_product send error: {e}')
+        bot.send_message(call.message.chat.id, text, reply_markup=inline_qty(prod_idx, lang))
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('qty_'))
 def cb_qty(call):
@@ -594,7 +638,7 @@ def cb_qty(call):
 def cb_continue(call):
     lang = get_lang(call.from_user.id)
     bot.answer_callback_query(call.id)
-    bot.send_message(call.message.chat.id, TEXTS[lang]['shop_products'], reply_markup=inline_products(lang))
+    send_shop_products(call.message.chat.id, lang)
 
 @bot.callback_query_handler(func=lambda c: c.data == 'show_cart')
 def cb_show_cart(call):
