@@ -528,6 +528,17 @@ def track_group(message):
 
 # ─── HANDLERS ─────────────────────────────────────────────────────────────────
 
+@bot.message_handler(commands=['id'])
+def cmd_id(message):
+    if message.chat.type != 'private' or message.from_user.id != ADMIN_ID:
+        return
+    groups = get_known_groups()
+    if groups:
+        lines = '\n'.join([f'<code>{g[0]}</code> — {g[1]} ({g[2]})\n{g[3]}' for g in groups])
+        bot.send_message(message.chat.id, f'📋 known_groups:\n\n{lines}', parse_mode='HTML')
+    else:
+        bot.send_message(message.chat.id, '📋 known_groups пуста. Бот ещё не видел групп.')
+
 @bot.message_handler(commands=['start'])
 def start(message):
     if message.chat.type != 'private':
