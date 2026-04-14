@@ -31,8 +31,14 @@ def init_db():
         referrer_id INTEGER DEFAULT NULL,
         ref_earnings REAL DEFAULT 0,
         language TEXT DEFAULT 'ru',
-        first_order_done INTEGER DEFAULT 0
+        first_order_done INTEGER DEFAULT 0,
+        shop_verified INTEGER DEFAULT 0
     )''')
+    # Добавить колонку если БД старая (без неё)
+    try:
+        c.execute('ALTER TABLE users ADD COLUMN shop_verified INTEGER DEFAULT 0')
+    except Exception:
+        pass
     c.execute('''CREATE TABLE IF NOT EXISTS carts (
         user_id INTEGER,
         product TEXT,
@@ -105,6 +111,17 @@ def set_lang(user_id, lang):
     conn = db()
     c = conn.cursor()
     c.execute('UPDATE users SET language=? WHERE user_id=?', (lang, user_id))
+    conn.commit()
+    conn.close()
+
+def get_shop_verified(user_id):
+    u = get_user(user_id)
+    return u[11] == 1 if u else False
+
+def set_shop_verified(user_id):
+    conn = db()
+    c = conn.cursor()
+    c.execute('UPDATE users SET shop_verified=1 WHERE user_id=?', (user_id,))
     conn.commit()
     conn.close()
 
@@ -702,12 +719,16 @@ def change_to_russian(message):
     first_name = message.from_user.first_name or ''
     send_main(message.chat.id, 'ru', TEXTS['ru']['welcome'].format(name=first_name))
 
-# Shop entry — капча
+# Shop entry — капча (один раз)
 @bot.message_handler(func=lambda m: m.text in ['🛍 Магазин', '🛍 Shop'])
 def shop(message):
-    lang = get_lang(message.from_user.id)
+    user_id = message.from_user.id
+    lang = get_lang(user_id)
+    if get_shop_verified(user_id):
+        send_shop_city_photo(message.chat.id, lang)
+        return
     correct, options = make_shop_captcha()
-    user_states[message.from_user.id] = {'state': 'shop_captcha', 'correct': correct}
+    user_states[user_id] = {'state': 'shop_captcha', 'correct': correct}
     text = (
         f'🧪Chef House.\n\n'
         f'🔒 Закрытый доступ.\n\n'
@@ -718,6 +739,12 @@ def shop(message):
     bot.send_message(message.chat.id, text, reply_markup=inline_shop_captcha(options))
 
 # ─── INLINE CALLBACKS ─────────────────────────────────────────────────────────
+
+def send_shop_city_photo(chat_id, lang):
+    try:
+        bot.send_photo(chat_id, SHOP_PHOTO, caption=TEXTS[lang]['shop_city'], reply_markup=inline_cities(lang))
+    except Exception:
+        bot.send_message(chat_id, TEXTS[lang]['shop_city'], reply_markup=inline_cities(lang))
 
 def send_shop_products(chat_id, lang):
     try:
@@ -736,16 +763,17 @@ def cb_shop_captcha(call):
     correct = state.get('correct')
     if chosen == correct:
         user_states.pop(user_id, None)
+        set_shop_verified(user_id)
         bot.answer_callback_query(call.id, '✅')
+        lang = get_lang(user_id)
         try:
             bot.edit_message_text(
                 'Хранилище.\n\nПрага.\nДоступ к подбору открыт.',
-                call.message.chat.id, call.message.message_id,
-                reply_markup=inline_city_after_captcha()
+                call.message.chat.id, call.message.message_id
             )
         except Exception:
-            bot.send_message(call.message.chat.id, 'Хранилище.\n\nПрага.\nДоступ к подбору открыт.',
-                             reply_markup=inline_city_after_captcha())
+            pass
+        send_shop_city_photo(call.message.chat.id, lang)
     else:
         bot.answer_callback_query(call.id, '⛔ Неверно')
         correct2, options2 = make_shop_captcha()
