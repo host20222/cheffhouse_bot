@@ -461,19 +461,26 @@ def send_order_to_courier(order_id, user_id, items, address, is_referral):
         f'📍 Адрес: {address}'
         f'{ref_note}'
     )
-    print(f'[COURIER] Отправляю сообщение в группу {COURIER_GROUP_ID}...')
+    print(f'[COURIER] Текст сообщения: {repr(text[:100])}...')
+    print(f'[COURIER] Отправляю простое сообщение (без parse_mode, без reply_markup) в группу {COURIER_GROUP_ID}...')
     try:
-        bot.send_message(COURIER_GROUP_ID, text, reply_markup=inline_courier_take(order_id))
-        print(f'[COURIER] ✅ Успешно отправлено в группу {COURIER_GROUP_ID}')
+        msg = bot.send_message(COURIER_GROUP_ID, text, parse_mode=None)
+        print(f'[COURIER] ✅ Текст успешно отправлен, message_id={msg.message_id}')
+        # Теперь пробуем добавить кнопку через edit
+        try:
+            bot.edit_message_reply_markup(COURIER_GROUP_ID, msg.message_id, reply_markup=inline_courier_take(order_id))
+            print(f'[COURIER] ✅ Кнопка "Взять заказ" добавлена')
+        except Exception as e_btn:
+            print(f'[COURIER] ⚠️ Не удалось добавить кнопку: {e_btn}')
     except Exception as e:
-        print(f'[COURIER] ❌ Ошибка отправки в группу {COURIER_GROUP_ID}: {e}')
-        logging.error(f'Courier send error: {e}')
+        print(f'[COURIER] ❌ Ошибка отправки в группу {COURIER_GROUP_ID}: {type(e).__name__}: {e}')
+        logging.error(f'Courier send error: {type(e).__name__}: {e}')
         print(f'[COURIER] Fallback: отправляю в ADMIN_ID={ADMIN_ID}')
         try:
-            bot.send_message(ADMIN_ID, f'⚠️ Не удалось отправить заказ в группу!\n\n{text}', reply_markup=inline_courier_take(order_id))
+            bot.send_message(ADMIN_ID, f'⚠️ Не удалось отправить заказ в группу {COURIER_GROUP_ID}!\n\n{text}', reply_markup=inline_courier_take(order_id))
             print(f'[COURIER] Fallback отправлен админу')
         except Exception as e2:
-            print(f'[COURIER] ❌ Fallback тоже не удался: {e2}')
+            print(f'[COURIER] ❌ Fallback тоже не удался: {type(e2).__name__}: {e2}')
             logging.error(f'Admin notify error: {e2}')
 
 def check_referral_bonus(user_id):
@@ -785,5 +792,12 @@ if __name__ == '__main__':
         print('Команды бота настроены: только private чаты')
     except Exception as e:
         print(f'Ошибка настройки команд: {e}')
+    # Тест отправки в курьерскую группу при старте
+    print(f'[STARTUP] Проверка доступа к курьерской группе {COURIER_GROUP_ID}...')
+    try:
+        test_msg = bot.send_message(COURIER_GROUP_ID, 'тест', parse_mode=None)
+        print(f'[STARTUP] ✅ Тест успешен! message_id={test_msg.message_id}')
+    except Exception as e:
+        print(f'[STARTUP] ❌ Не удалось отправить тест в группу {COURIER_GROUP_ID}: {type(e).__name__}: {e}')
     print('Chef House бот запущен!')
     bot.polling(none_stop=True)
