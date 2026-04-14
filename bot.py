@@ -481,20 +481,34 @@ def send_order_to_courier(order_id, user_id, items, address, is_referral):
         f'🛍 Новый заказ #{order_id}\n'
         f'👤 Пользователь: {user_id}\n\n'
         f'{lines}\n\n'
-        f'📍 Адрес: {address}'
+        f'📍 Адрес:\n{address}'
         f'{ref_note}'
     )
+    # Извлекаем координаты если адрес — геопозиция
+    geo_coords = None
+    if address.startswith('geo:'):
+        try:
+            _, coords = address.split(':', 1)
+            lat, lon = coords.split(',')
+            geo_coords = (float(lat), float(lon))
+        except Exception as e_geo:
+            print(f'[COURIER] ⚠️ Не удалось распарсить geo: {e_geo}')
     print(f'[COURIER] Текст сообщения: {repr(text[:100])}...')
     print(f'[COURIER] Отправляю простое сообщение (без parse_mode, без reply_markup) в группу {COURIER_GROUP_ID}...')
     try:
         msg = bot.send_message(COURIER_GROUP_ID, text, parse_mode=None)
         print(f'[COURIER] ✅ Текст успешно отправлен, message_id={msg.message_id}')
-        # Теперь пробуем добавить кнопку через edit
         try:
             bot.edit_message_reply_markup(COURIER_GROUP_ID, msg.message_id, reply_markup=inline_courier_take(order_id))
             print(f'[COURIER] ✅ Кнопка "Взять заказ" добавлена')
         except Exception as e_btn:
             print(f'[COURIER] ⚠️ Не удалось добавить кнопку: {e_btn}')
+        if geo_coords:
+            try:
+                bot.send_location(COURIER_GROUP_ID, geo_coords[0], geo_coords[1])
+                print(f'[COURIER] ✅ Геолокация отправлена: {geo_coords}')
+            except Exception as e_loc:
+                print(f'[COURIER] ⚠️ Не удалось отправить геолокацию: {e_loc}')
     except Exception as e:
         print(f'[COURIER] ❌ Ошибка отправки в группу {COURIER_GROUP_ID}: {type(e).__name__}: {e}')
         logging.error(f'Courier send error: {type(e).__name__}: {e}')
