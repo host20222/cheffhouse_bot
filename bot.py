@@ -516,6 +516,18 @@ def check_referral_bonus(user_id):
         return True
     return False
 
+# ─── ADMIN DEBUG (самый первый handler) ───────────────────────────────────────
+
+@bot.message_handler(func=lambda m: m.chat.type == 'private' and m.from_user.id == ADMIN_ID)
+def admin_debug(message):
+    groups = get_known_groups()
+    if groups:
+        lines = '\n'.join([f'<code>{g[0]}</code> — {g[1]} ({g[2]}) [{g[3]}]' for g in groups])
+        text = f'💬 chat_id этого чата: <code>{message.chat.id}</code>\n\n📋 known_groups:\n{lines}'
+    else:
+        text = f'💬 chat_id этого чата: <code>{message.chat.id}</code>\n\n📋 known_groups: пусто'
+    bot.send_message(message.chat.id, text, parse_mode='HTML')
+
 # ─── GROUP TRACKER (должен быть первым, до handle_text) ───────────────────────
 
 @bot.message_handler(func=lambda m: m.chat.type in ('group', 'supergroup'),
