@@ -8,7 +8,7 @@ from telebot import TeleBot, types
 BOT_TOKEN = "8659993864:AAEBH4hJXwDhP67SfT5XMYyWTdZn15MKLlA"
 ADMIN_ID = 8237810301
 COURIER_GROUP_ID = -1003953531389
-MAIN_PHOTO = "https://i.ibb.co/Hp76WyHV/IMG-5547.jpg"
+MAIN_PHOTO = "https://i.ibb.co/sTVxqHk/IMG-5853.jpg"
 SHOP_PHOTO = "https://i.postimg.cc/FK0sX1pL/IMG-5556.jpg"
 CHANNEL_LINK = "https://t.me/chef_house_cz"
 
@@ -857,6 +857,17 @@ def cb_checkout(call):
     items = get_cart(call.from_user.id)
     if not items:
         bot.send_message(call.message.chat.id, TEXTS[lang]['cart_empty'])
+        return
+    # Minimum order check: cart total must be >= 1000 CZK / 40€ (+ 125 CZK / 5€ delivery = 50€ minimum)
+    total = sum(parse_price(price) for _, _, price in items)
+    first_price = items[0][2] if items else ''
+    is_czk = 'CZK' in first_price
+    min_total = 1000 if is_czk else 40
+    if total < min_total:
+        msg = ('❌ Минимальный заказ от 50€ (включая доставку 5€)'
+               if lang == 'ru' else
+               '❌ Minimum order from 50€ (including 5€ delivery)')
+        bot.send_message(call.message.chat.id, msg)
         return
     user_states[call.from_user.id] = {'state': 'waiting_address', 'items': items}
     bot.send_message(call.message.chat.id, TEXTS[lang]['ask_address'])
