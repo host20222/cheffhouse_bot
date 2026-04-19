@@ -43,13 +43,25 @@ def init_db():
         c.execute('ALTER TABLE users ADD COLUMN shop_verified INTEGER DEFAULT 0')
     except Exception:
         pass
-    c.execute('''CREATE TABLE IF NOT EXISTS carts (
-        user_id INTEGER,
-        product TEXT,
-        qty TEXT,
-        price TEXT,
-        PRIMARY KEY (user_id, product, qty)
-    )''')
+    # Migrate carts table: old schema had composite PK which prevented duplicate products
+    c.execute("SELECT COUNT(*) FROM pragma_table_info('carts') WHERE name='id'")
+    if c.fetchone()[0] == 0:
+        c.execute('DROP TABLE IF EXISTS carts')
+        c.execute('''CREATE TABLE carts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            product TEXT,
+            qty TEXT,
+            price TEXT
+        )''')
+    else:
+        c.execute('''CREATE TABLE IF NOT EXISTS carts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            product TEXT,
+            qty TEXT,
+            price TEXT
+        )''')
     c.execute('''CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
@@ -147,7 +159,7 @@ def get_cart(user_id):
 def add_to_cart(user_id, product, qty, price):
     conn = db()
     c = conn.cursor()
-    c.execute('INSERT OR REPLACE INTO carts (user_id, product, qty, price) VALUES (?,?,?,?)',
+    c.execute('INSERT INTO carts (user_id, product, qty, price) VALUES (?,?,?,?)',
               (user_id, product, qty, price))
     conn.commit()
     conn.close()
