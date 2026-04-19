@@ -243,14 +243,12 @@ PRODUCTS = {
         '🥦 Premium broccoli':            [('1 шт', '300 CZK'), ('2 шт', '600 CZK'), ('3 шт', '750 CZK'), ('4 шт', '1000 CZK')],
         '🍄 Wild forest selection':        [('1', '500 CZK'), ('3', '1400 CZK'), ('5', '2200 CZK')],
         '🌸 Мука семян лотоса (Pure 92%)': [('1 кг', '2800 CZK'), ('2 кг', '5300 CZK'), ('3 кг', '7500 CZK')],
-        '❤️ Сахар Wasanbon':               [('0.5', '700 CZK'), ('1', '1200 CZK'), ('2', '2200 CZK'), ('3', '3100 CZK'), ('4', '3900 CZK')],
         '🎧 Клубная музыка (диски!)':       [('1 мес', '300 CZK'), ('2 мес', '600 CZK'), ('3 мес', '800 CZK'), ('4 мес', '1000 CZK')],
     },
     'en': {
         '🥦 Premium broccoli':             [('1 pc', '12€'), ('2 pc', '24€'), ('3 pc', '30€'), ('4 pc', '40€')],
         '🍄 Wild forest selection':         [('1', '20€'), ('3', '56€'), ('5', '88€')],
         '🌸 Lotus seed flour (Pure 92%)':   [('1 kg', '112€'), ('2 kg', '212€'), ('3 kg', '300€')],
-        '❤️ Wasanbon sugar':                [('0.5', '28€'), ('1', '48€'), ('2', '88€'), ('3', '124€'), ('4', '156€')],
         '🎧 Club music (discs!)':           [('1 mo', '12€'), ('2 mo', '24€'), ('3 mo', '32€'), ('4 mo', '40€')],
     }
 }
@@ -293,15 +291,6 @@ PRODUCT_DESCRIPTIONS = {
             '✨ A gentle lift. A closer feeling.\n\n'
             '👇 Выберите количество:'
         ),
-        '❤️ Сахар Wasanbon': (
-            '❤️ Сахар Wasanbon\n\n'
-            'Мягкая сладость с тонкой текстурой.\n'
-            'Лёгкий прилив тепла и настроения.\n\n'
-            'Создано для уютных вечеров,\n'
-            'разговоров и моментов ближе.\n\n'
-            '✨ Soft energy. Warm connection.\n\n'
-            '👇 Выберите количество:'
-        ),
         '🎧 Клубная музыка (диски!)': (
             '🎧 Клубная музыка\n\n'
             'Физические диски с подборкой\n'
@@ -325,11 +314,11 @@ PRODUCT_DESCRIPTIONS = {
         ),
         '🍄 Wild forest selection': (
             '🍄 Forest selection\n\n'
-            'Более 5 видов на выбор.\n\n'
-            'Разные текстуры, оттенки и характер.\n\n'
-            'Каждый найдёт своё:\n'
-            'от мягкого и лёгкого до насыщенного и глубокого.\n\n'
-            'Сезонный сбор. Натуральное качество.\n\n'
+            '5+ species available.\n'
+            'Different textures, shades and character.\n\n'
+            'Everyone finds their own:\n'
+            'from light and gentle to rich and deep.\n\n'
+            'Seasonal harvest. Natural quality.\n\n'
             '✨ Choose your vibe.\n\n'
             '👇 Choose quantity:'
         ),
@@ -340,15 +329,6 @@ PRODUCT_DESCRIPTIONS = {
             'For those who choose quality\n'
             'and a steady rhythm without overload.\n\n'
             '✨ A gentle lift. A closer feeling.\n\n'
-            '👇 Choose quantity:'
-        ),
-        '❤️ Wasanbon sugar': (
-            '❤️ Wasanbon sugar\n\n'
-            'Soft sweetness with a fine texture.\n'
-            'A gentle rush of warmth and mood.\n\n'
-            'Made for cozy evenings,\n'
-            'conversations and closer moments.\n\n'
-            '✨ Soft energy. Warm connection.\n\n'
             '👇 Choose quantity:'
         ),
         '🎧 Club music (discs!)': (
@@ -519,6 +499,7 @@ def send_order_to_courier(order_id, user_id, items, address, is_referral):
         f'🛍 Новый заказ #{order_id}\n'
         f'👤 Пользователь: {user_id}\n\n'
         f'{lines}\n\n'
+        f'🚴 Доставка: 125-250 CZK (5-10€)\n\n'
         f'📍 Адрес:\n{address}'
         f'{ref_note}'
     )
@@ -870,7 +851,10 @@ def cb_checkout(call):
         bot.send_message(call.message.chat.id, msg)
         return
     user_states[call.from_user.id] = {'state': 'waiting_address', 'items': items}
-    bot.send_message(call.message.chat.id, TEXTS[lang]['ask_address'])
+    delivery_note = ('🚴 Доставка: 5-10€ (уточнит курьер)\n\n'
+                     if lang == 'ru' else
+                     '🚴 Delivery: 5-10€ (courier will confirm)\n\n')
+    bot.send_message(call.message.chat.id, delivery_note + TEXTS[lang]['ask_address'])
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('take_'))
 def cb_take_order(call):
