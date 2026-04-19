@@ -241,14 +241,14 @@ TEXTS = {
 PRODUCTS = {
     'ru': {
         '🥦 Premium broccoli':            [('1 шт', '300 CZK'), ('2 шт', '600 CZK'), ('3 шт', '750 CZK'), ('4 шт', '1000 CZK')],
-        '🍄 Wild forest selection':        [('1', '500 CZK'), ('3', '1400 CZK'), ('5', '2200 CZK')],
-        '🌸 Мука семян лотоса (Pure 92%)': [('1 кг', '2800 CZK'), ('2 кг', '5300 CZK'), ('3 кг', '7500 CZK')],
+        '🍄 Wild forest selection':        [('1', '800 CZK / 32€'), ('2', '1400 CZK / 56€'), ('3', '2000 CZK / 80€'), ('4', '2500 CZK / 100€')],
+        '🌸 Мука семян лотоса (Pure 92%)': [('1', '2800 CZK / 112€'), ('2', '5300 CZK / 212€'), ('3', '7500 CZK / 300€'), ('4', '9750 CZK / 390€')],
         '🎧 Клубная музыка (диски!)':       [('1 мес', '300 CZK'), ('2 мес', '600 CZK'), ('3 мес', '800 CZK'), ('4 мес', '1000 CZK')],
     },
     'en': {
         '🥦 Premium broccoli':             [('1 pc', '12€'), ('2 pc', '24€'), ('3 pc', '30€'), ('4 pc', '40€')],
-        '🍄 Wild forest selection':         [('1', '20€'), ('3', '56€'), ('5', '88€')],
-        '🌸 Lotus seed flour (Pure 92%)':   [('1 kg', '112€'), ('2 kg', '212€'), ('3 kg', '300€')],
+        '🍄 Wild forest selection':         [('1', '32€'), ('2', '56€'), ('3', '80€'), ('4', '100€')],
+        '🌸 Lotus seed flour (Pure 92%)':   [('1', '112€'), ('2', '212€'), ('3', '300€'), ('4', '390€')],
         '🎧 Club music (discs!)':           [('1 mo', '12€'), ('2 mo', '24€'), ('3 mo', '32€'), ('4 mo', '40€')],
     }
 }
@@ -710,13 +710,22 @@ def shop(message):
         return
     correct, options = make_shop_captcha()
     user_states[user_id] = {'state': 'shop_captcha', 'correct': correct}
-    text = (
-        f'🧪Chef House.\n\n'
-        f'🔒 Закрытый доступ.\n\n'
-        f'⚠️ Вход возможен только 18+.\n'
-        f'‼️ Подтвердите доступ.\n'
-        f'Выберите изображение где нарисовано {correct}'
-    )
+    if lang == 'ru':
+        text = (
+            f'🧪Chef House.\n\n'
+            f'🔒 Закрытый доступ.\n\n'
+            f'⚠️ Вход возможен только 18+.\n'
+            f'‼️ Подтвердите доступ.\n'
+            f'Выберите изображение где нарисовано {correct}'
+        )
+    else:
+        text = (
+            f'🧪Chef House.\n\n'
+            f'🔒 Restricted access.\n\n'
+            f'⚠️ 18+ only.\n'
+            f'‼️ Confirm access.\n'
+            f'Choose the image with {correct}'
+        )
     bot.send_message(message.chat.id, text, reply_markup=inline_shop_captcha(options))
 
 # ─── INLINE CALLBACKS ─────────────────────────────────────────────────────────
@@ -727,13 +736,17 @@ def send_shop_city_photo(chat_id, lang):
     except Exception:
         bot.send_message(chat_id, TEXTS[lang]['shop_city'], reply_markup=inline_cities(lang))
 
-SHOP_PRODUCTS_TEXT = 'Хранилище.\n\nПрага.\nДоступ к подбору открыт.'
+SHOP_PRODUCTS_TEXTS = {
+    'ru': 'Хранилище.\n\nПрага.\nДоступ к подбору открыт.',
+    'en': 'Storage.\n\nPrague.\nAccess granted.',
+}
 
 def send_shop_products(chat_id, lang):
+    text = SHOP_PRODUCTS_TEXTS.get(lang, SHOP_PRODUCTS_TEXTS['ru'])
     try:
-        bot.send_photo(chat_id, SHOP_PHOTO, caption=SHOP_PRODUCTS_TEXT, reply_markup=inline_products(lang))
+        bot.send_photo(chat_id, SHOP_PHOTO, caption=text, reply_markup=inline_products(lang))
     except Exception:
-        bot.send_message(chat_id, SHOP_PRODUCTS_TEXT, reply_markup=inline_products(lang))
+        bot.send_message(chat_id, text, reply_markup=inline_products(lang))
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('scaptcha_'))
 def cb_shop_captcha(call):
