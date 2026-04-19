@@ -518,9 +518,13 @@ def send_order_to_courier(order_id, user_id, items, address, is_referral):
     print(f'[COURIER] Вызов send_order_to_courier: order_id={order_id}, user_id={user_id}, group={COURIER_GROUP_ID}')
     lines = '\n'.join([f'• {p} {q} — {pr}' for p, q, pr in items])
     ref_note = '\n\n🎁 Реферальный заказ! +1 брокколи бесплатно' if is_referral else ''
+    u = get_user(user_id)
+    username = u[1] if u and u[1] else ''
+    username_line = f'👤 @{username}\n' if username else ''
     text = (
         f'🛍 Новый заказ #{order_id}\n'
-        f'👤 Пользователь: {user_id}\n\n'
+        f'{username_line}'
+        f'📩 [Написать клиенту](tg://user?id={user_id})\n\n'
         f'{lines}\n\n'
         f'🚴 Доставка: 125-250 CZK (5-10€)\n\n'
         f'📍 Адрес:\n{address}'
@@ -536,9 +540,9 @@ def send_order_to_courier(order_id, user_id, items, address, is_referral):
         except Exception as e_geo:
             print(f'[COURIER] ⚠️ Не удалось распарсить geo: {e_geo}')
     print(f'[COURIER] Текст сообщения: {repr(text[:100])}...')
-    print(f'[COURIER] Отправляю простое сообщение (без parse_mode, без reply_markup) в группу {COURIER_GROUP_ID}...')
+    print(f'[COURIER] Отправляю сообщение в группу {COURIER_GROUP_ID}...')
     try:
-        msg = bot.send_message(COURIER_GROUP_ID, text, parse_mode=None)
+        msg = bot.send_message(COURIER_GROUP_ID, text, parse_mode='Markdown')
         print(f'[COURIER] ✅ Текст успешно отправлен, message_id={msg.message_id}')
         try:
             bot.edit_message_reply_markup(COURIER_GROUP_ID, msg.message_id, reply_markup=inline_courier_take(order_id))
