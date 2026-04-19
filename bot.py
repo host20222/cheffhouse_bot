@@ -2,8 +2,11 @@ import logging
 import sqlite3
 import json
 import time
+import os
 from datetime import datetime
 from telebot import TeleBot, types
+
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bot.db')
 
 BOT_TOKEN = "8659993864:AAEBH4hJXwDhP67SfT5XMYyWTdZn15MKLlA"
 ADMIN_ID = 8237810301
@@ -18,7 +21,8 @@ logging.basicConfig(level=logging.INFO)
 # ─── DB ───────────────────────────────────────────────────────────────────────
 
 def init_db():
-    conn = sqlite3.connect('bot.db')
+    print(f'[DB] Initializing DB at: {DB_PATH}')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS users (
         user_id INTEGER PRIMARY KEY,
@@ -84,7 +88,7 @@ def get_known_groups():
     return rows
 
 def db():
-    return sqlite3.connect('bot.db')
+    return sqlite3.connect(DB_PATH)
 
 def get_user(user_id):
     conn = db()
@@ -110,11 +114,16 @@ def get_lang(user_id):
     return lang
 
 def set_lang(user_id, lang):
+    print(f'[SET_LANG] user={user_id} → {lang}, db={DB_PATH}')
     conn = db()
     c = conn.cursor()
-    c.execute('UPDATE users SET language=? WHERE user_id=?', (lang, user_id))
+    rows = c.execute('UPDATE users SET language=? WHERE user_id=?', (lang, user_id)).rowcount
     conn.commit()
     conn.close()
+    # Verify saved
+    u = get_user(user_id)
+    saved = u[9] if u else 'NOT FOUND'
+    print(f'[SET_LANG] rows_updated={rows}, read_back={saved}')
 
 def get_shop_verified(user_id):
     u = get_user(user_id)
@@ -702,13 +711,17 @@ def referral(message):
 # Language
 @bot.message_handler(func=lambda m: m.text == '🇺🇸 Change the language')
 def change_to_english(message):
-    set_lang(message.from_user.id, 'en')
+    user_id = message.from_user.id
+    print(f'[CHANGE_LANG] user={user_id} handler fired → en')
+    set_lang(user_id, 'en')
     first_name = message.from_user.first_name or ''
     send_main(message.chat.id, 'en', TEXTS['en']['welcome'].format(name=first_name))
 
 @bot.message_handler(func=lambda m: m.text == '🇷🇺 Сменить язык')
 def change_to_russian(message):
-    set_lang(message.from_user.id, 'ru')
+    user_id = message.from_user.id
+    print(f'[CHANGE_LANG] user={user_id} handler fired → ru')
+    set_lang(user_id, 'ru')
     first_name = message.from_user.first_name or ''
     send_main(message.chat.id, 'ru', TEXTS['ru']['welcome'].format(name=first_name))
 
