@@ -105,7 +105,9 @@ def add_user(user_id, username, first_name, referrer_id=None):
 
 def get_lang(user_id):
     u = get_user(user_id)
-    return u[9] if u else 'ru'
+    lang = u[9] if u else 'ru'
+    print(f'[LANG] user={user_id} lang={lang}')
+    return lang
 
 def set_lang(user_id, lang):
     conn = db()
@@ -240,16 +242,16 @@ TEXTS = {
 
 PRODUCTS = {
     'ru': {
-        '🥦 Premium broccoli':            [('1 шт', '300 CZK'), ('2 шт', '600 CZK'), ('3 шт', '750 CZK'), ('4 шт', '1000 CZK')],
+        '🥦 Premium broccoli':            [('1', '300 CZK / 12€'), ('2', '600 CZK / 24€'), ('3', '750 CZK / 30€'), ('4', '1000 CZK / 40€')],
         '🍄 Wild forest selection':        [('1', '800 CZK / 32€'), ('2', '1400 CZK / 56€'), ('3', '2000 CZK / 80€'), ('4', '2500 CZK / 100€')],
         '🌸 Мука семян лотоса (Pure 92%)': [('1', '2800 CZK / 112€'), ('2', '5300 CZK / 212€'), ('3', '7500 CZK / 300€'), ('4', '9750 CZK / 390€')],
-        '🎧 Клубная музыка (диски!)':       [('1 мес', '300 CZK'), ('2 мес', '600 CZK'), ('3 мес', '800 CZK'), ('4 мес', '1000 CZK')],
+        '🎧 Клубная музыка (диски!)':       [('1', '300 CZK / 12€'), ('2', '600 CZK / 24€'), ('3', '800 CZK / 32€'), ('4', '1000 CZK / 40€')],
     },
     'en': {
-        '🥦 Premium broccoli':             [('1 pc', '12€'), ('2 pc', '24€'), ('3 pc', '30€'), ('4 pc', '40€')],
+        '🥦 Premium broccoli':             [('1', '12€'), ('2', '24€'), ('3', '30€'), ('4', '40€')],
         '🍄 Wild forest selection':         [('1', '32€'), ('2', '56€'), ('3', '80€'), ('4', '100€')],
         '🌸 Lotus seed flour (Pure 92%)':   [('1', '112€'), ('2', '212€'), ('3', '300€'), ('4', '390€')],
-        '🎧 Club music (discs!)':           [('1 mo', '12€'), ('2 mo', '24€'), ('3 mo', '32€'), ('4 mo', '40€')],
+        '🎧 Club music (discs!)':           [('1', '12€'), ('2', '24€'), ('3', '32€'), ('4', '40€')],
     }
 }
 
@@ -549,9 +551,9 @@ def check_referral_bonus(user_id):
         return True
     return False
 
-# ─── ADMIN DEBUG (самый первый handler) ───────────────────────────────────────
+# ─── ADMIN COMMANDS ───────────────────────────────────────────────────────────
 
-@bot.message_handler(func=lambda m: m.chat.type == 'private' and m.from_user.id == ADMIN_ID)
+@bot.message_handler(commands=['debug'], func=lambda m: m.chat.type == 'private' and m.from_user.id == ADMIN_ID)
 def admin_debug(message):
     groups = get_known_groups()
     if groups:
@@ -560,6 +562,16 @@ def admin_debug(message):
     else:
         text = f'💬 chat_id этого чата: <code>{message.chat.id}</code>\n\n📋 known_groups: пусто'
     bot.send_message(message.chat.id, text, parse_mode='HTML')
+
+@bot.message_handler(commands=['langtest'], func=lambda m: m.chat.type == 'private' and m.from_user.id == ADMIN_ID)
+def admin_langtest(message):
+    user_id = message.from_user.id
+    u = get_user(user_id)
+    if u:
+        lang = u[9]
+        bot.send_message(message.chat.id, f'🔍 Lang test\nuser_id: <code>{user_id}</code>\nlang в БД: <b>{lang}</b>', parse_mode='HTML')
+    else:
+        bot.send_message(message.chat.id, '❌ Пользователь не найден в БД')
 
 # ─── GROUP TRACKER (должен быть первым, до handle_text) ───────────────────────
 
@@ -768,13 +780,14 @@ def cb_shop_captcha(call):
             pass
         send_shop_city_photo(call.message.chat.id, lang)
     else:
-        bot.answer_callback_query(call.id, '⛔ Неверно')
+        bot.answer_callback_query(call.id, '⛔ Неверно' if get_lang(user_id) == 'ru' else '⛔ Wrong')
         correct2, options2 = make_shop_captcha()
         user_states[user_id] = {'state': 'shop_captcha', 'correct': correct2}
-        text = (
-            f'⛔ Доступ закрыт. Попробуйте снова.\n\n'
-            f'Выберите изображение где нарисовано {correct2}'
-        )
+        lang2 = get_lang(user_id)
+        if lang2 == 'ru':
+            text = f'⛔ Доступ закрыт. Попробуйте снова.\n\nВыберите изображение где нарисовано {correct2}'
+        else:
+            text = f'⛔ Access denied. Try again.\n\nChoose the image with {correct2}'
         try:
             bot.edit_message_text(text, call.message.chat.id, call.message.message_id,
                                   reply_markup=inline_shop_captcha(options2))
